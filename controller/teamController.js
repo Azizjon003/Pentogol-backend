@@ -11,15 +11,9 @@ exports.AddTeam = catchAsync(async (req, res, next) => {
   if (mongoose.Types.ObjectId.isValid(ligueId) === false) {
     return next(new AppError("No ligue found with that ID", 404));
   }
-
-  const ligue = await Ligue.findById(req.params.ligId);
-  if (!ligue) {
-    return next(new AppError("No ligue found with that ID", 404));
-  }
-
-  console.log(req.body);
+  const teams = await Teams.find({ ligueId: ligueId, name: req.body.name });
+if()
   req.body.ligueId = req.params.ligId;
-  req.body.image = "erali";
   const team = await Teams.create(req.body);
   res.status(201).json({
     status: "success",
