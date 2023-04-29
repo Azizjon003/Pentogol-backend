@@ -8,7 +8,6 @@ const teamsSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: true,
     },
     ligueId: {
       type: mongoose.Schema.Types.ObjectId,
