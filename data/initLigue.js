@@ -3,16 +3,16 @@ const mongoose = require("mongoose");
 const connection = require("../model/connection");
 const { Ligue } = require("../model/games/ligue");
 const data = [
-  "Angiliya Primier Ligasi",
-  "Bundesliga",
-  "La Liga",
-  "Ligue 1",
-  "Serie A",
+  { name: "Angiliya Primier Ligasi", countTeams: 20 },
+  { name: "Bundesliga", countTeams: 18 },
+  { name: "La Liga", countTeams: 20 },
+  { name: "Ligue 1", countTeams: 20 },
+  { name: "Serie A", countTeams: 20 },
 ];
 
 async function initLigue() {
   try {
-    await connection(process.env.DB_HOST, process.env.DB_NAME);
+    await connection(process.env.DB, process.env.DB_PASS);
     await Ligue.deleteMany({});
     await Ligue.insertMany(data);
     console.log("Ligue init success");

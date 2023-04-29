@@ -6,14 +6,10 @@ const ligueSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: true,
   },
   countTeams: {
     type: Number,
     default: 20,
-  },
-  tittle: {
-    type: String,
   },
 });
 ligueSchema.pre(/^find/, async function (next) {
