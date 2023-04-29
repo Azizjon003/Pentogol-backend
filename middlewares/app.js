@@ -3,6 +3,7 @@ const app = express();
 const ErrorHandler = require("../controller/errorHandler");
 const AppError = require("../utility/appError");
 const morgan = require("morgan");
+const path = require("path");
 const cors = require("cors");
 app.use(express.json());
 app.use(morgan("dev"));
@@ -13,8 +14,10 @@ app.use(
   })
 );
 
+app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/v1/ligues", require("../routes/ligueRoutes"));
 app.use("/api/v1/teams", require("../routes/teamsRoute"));
+app.use("/api/v1/news", require("../routes/newsRoute"));
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });

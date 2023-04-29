@@ -14,9 +14,5 @@ const matchSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  endTime: {
-    type: Date,
-    required: true,
-  },
 });
 exports.Match = mongoose.model("Match", matchSchema);

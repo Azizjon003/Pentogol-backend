@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const app = require("./middlwares/app");
+const app = require("./middlewares/app");
 const connection = require("./model/connection");
 const port = process.env.PORT || 3000;
 const DB = process.env.DB;
