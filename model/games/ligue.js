@@ -16,5 +16,11 @@ const ligueSchema = new mongoose.Schema({
     type: String,
   },
 });
+ligueSchema.pre(/^find/, async function (next) {
+  // const data = th;
+  // this;
+  // console.log(this);
+  next();
+});
 
 exports.Ligue = mongoose.model("Ligue", ligueSchema);

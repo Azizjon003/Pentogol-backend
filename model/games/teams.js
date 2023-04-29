@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Ligue = require("./ligue");
 const teamsSchema = new mongoose.Schema(
   {
     name: {
@@ -21,6 +22,7 @@ const teamsSchema = new mongoose.Schema(
     ligueId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ligues",
+      required: true,
     },
   },
   {
