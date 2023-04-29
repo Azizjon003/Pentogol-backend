@@ -5,7 +5,11 @@ const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
 
 exports.AddTeam = catchAsync(async (req, res, next) => {
-  console.log(req.params.ligId);
+  const ligueId = req.params.ligId;
+  if (mongoose.Types.ObjectId.isValid(ligueId) === false) {
+    return next(new AppError("No ligue found with that ID", 404));
+  }
+
   const ligue = await Ligue.findById(req.params.ligId);
   if (!ligue) {
     return next(new AppError("No ligue found with that ID", 404));

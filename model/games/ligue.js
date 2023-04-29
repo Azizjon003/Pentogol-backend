@@ -12,7 +12,7 @@ const ligueSchema = new mongoose.Schema({
     type: Number,
     default: 20,
   },
-  title: {
+  tittle: {
     type: String,
   },
 });

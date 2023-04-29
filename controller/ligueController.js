@@ -3,6 +3,7 @@ const { Teams } = require("../model/games/teams");
 
 const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
+const sortData = require("../utility/teamsSort");
 exports.getAllLigues = catchAsync(async (req, res, next) => {
   const ligues = await Ligue.aggregate([
     {
@@ -13,16 +14,22 @@ exports.getAllLigues = catchAsync(async (req, res, next) => {
         as: "teams",
       },
     },
+    {
+      $sort: {
+        "Teams.points": -1,
+      },
+    },
   ]);
 
   if (ligues.length === 0 && !ligues[0]) {
     return next(new AppError("No ligues found", 404));
   }
+  ligues.forEach((ligue) => {
+    ligues.teams = sortData(ligue.teams);
+  });
   res.status(200).json({
     status: "success",
-    data: {
-      ligues,
-    },
+    data: ligues,
   });
 });
 exports.addLigue = catchAsync(async (req, res, next) => {

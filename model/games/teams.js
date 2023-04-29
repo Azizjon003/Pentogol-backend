@@ -10,15 +10,6 @@ const teamsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    points: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
-    numberGame: {
-      type: Number,
-      default: 0,
-    },
     ligueId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ligues",

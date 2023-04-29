@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 const matchSchema = new mongoose.Schema({
   homeTeam: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Teams",
+    ref: "TeamSeasons",
     required: true,
   },
   awayTeam: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Teams",
+    ref: "TeamSeason",
     required: true,
   },
   startTime: {

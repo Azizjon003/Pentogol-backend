@@ -3,9 +3,15 @@ const app = express();
 const ErrorHandler = require("../controller/errorHandler");
 const AppError = require("../utility/appError");
 const morgan = require("morgan");
-
+const cors = require("cors");
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+  })
+);
 
 app.use("/api/v1/ligues", require("../routes/ligueRoutes"));
 app.use("/api/v1/teams", require("../routes/teamsRoute"));
