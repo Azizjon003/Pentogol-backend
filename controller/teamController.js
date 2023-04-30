@@ -12,7 +12,9 @@ exports.AddTeam = catchAsync(async (req, res, next) => {
     return next(new AppError("No ligue found with that ID", 404));
   }
   const teams = await Teams.find({ ligueId: ligueId, name: req.body.name });
-if()
+  if (teams) {
+    return next(new AppError("Team already exist", 404));
+  }
   req.body.ligueId = req.params.ligId;
   const team = await Teams.create(req.body);
   res.status(201).json({
@@ -22,6 +24,7 @@ if()
 });
 
 exports.getMatch = catchAsync(async (req, res, next) => {
+  console.log(req.params);
   let ligues = await Ligue.aggregate([
     {
       $match: {
@@ -66,7 +69,9 @@ exports.getMatch = catchAsync(async (req, res, next) => {
         as: "teamseasons",
       },
     },
-    { $unwind: "$teamseasons" },
+    {
+      $unwind: "$teamseasons",
+    },
     {
       $lookup: {
         from: "matches",
@@ -89,17 +94,6 @@ exports.getMatch = catchAsync(async (req, res, next) => {
     },
 
     {
-      $lookup: {
-        from: "scores",
-        localField: "matches._id",
-        foreignField: "matchId",
-        as: "scores",
-      },
-    },
-    {
-      $unwind: "$scores",
-    },
-    {
       $group: {
         _id: "$_id",
         name: { $first: "$name" },
@@ -108,11 +102,10 @@ exports.getMatch = catchAsync(async (req, res, next) => {
             homeTeam: "$matches.homeTeam",
             homeTeamName: "$teams.name",
             homeTeamId: "$teams._id",
-
+            homeImage: "$teams.image",
             awayTeam: "$matches.awayTeam",
-
-            homeTeamScore: "$scores.homeTeam",
-            awayTeamScore: "$scores.awayTeam",
+            homeTeamScore: "$matches.homeGoal",
+            awayTeamScore: "$matches.awayGoal",
             startTime: "$matches.startTime",
           },
         },
@@ -120,6 +113,10 @@ exports.getMatch = catchAsync(async (req, res, next) => {
     },
   ]);
 
+  console.log(ligues);
+  if (ligues.length === 0) {
+    return next(new AppError("No ligue found with that ID", 404));
+  }
   for (let i = 0; i < ligues[0].scores.length; i++) {
     const awayTeam = await TeamSeason.aggregate([
       {
@@ -143,12 +140,14 @@ exports.getMatch = catchAsync(async (req, res, next) => {
           _id: "$_id",
           name: { $first: "$teams.name" },
           teamId: { $first: "$teams._id" },
+          awayImage: { $first: "$teams.image" },
         },
       },
     ]);
     console.log(awayTeam);
     ligues[0].scores[i].awayTeamName = awayTeam[0].name;
     ligues[0].scores[i].awayTeamId = awayTeam[0].teamId;
+    ligues[0].scores[i].awayImage = awayTeam[0].awayImage;
   }
 
   res.status(200).json({
@@ -222,18 +221,6 @@ exports.getFeatureMatch = catchAsync(async (req, res, next) => {
     {
       $unwind: "$matches",
     },
-
-    {
-      $lookup: {
-        from: "scores",
-        localField: "matches._id",
-        foreignField: "matchId",
-        as: "scores",
-      },
-    },
-    {
-      $unwind: "$scores",
-    },
     {
       $group: {
         _id: "$_id",
@@ -246,8 +233,8 @@ exports.getFeatureMatch = catchAsync(async (req, res, next) => {
 
             awayTeam: "$matches.awayTeam",
 
-            homeTeamScore: "$scores.homeTeam",
-            awayTeamScore: "$scores.awayTeam",
+            homeTeamScore: "$matches.homeTeam",
+            awayTeamScore: "$matches.awayTeam",
             startTime: "$matches.startTime",
           },
         },
@@ -292,5 +279,22 @@ exports.getFeatureMatch = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: ligues,
+  });
+});
+
+exports.getTeamsNoFull = catchAsync(async (req, res, next) => {
+  console.log(req.params.id);
+  const id = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(new AppError("Invalid id", 404));
+  }
+
+  const teams = await Team.find({ ligueId: req.params.id });
+  if (!teams) {
+    return next(new AppError("No team found with that ID", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    data: teams,
   });
 });

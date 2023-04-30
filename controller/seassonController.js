@@ -38,7 +38,19 @@ exports.addSeasson = catchAsync(async (req, res, next) => {
   });
 });
 exports.getSeassons = catchAsync(async (req, res, next) => {
-  const seassons = await Seasson.find();
+  const seassons = await Seasson.aggregate([
+    {
+      $lookup: {
+        from: "ligues",
+        localField: "ligueId",
+        foreignField: "_id",
+        as: "ligues",
+      },
+    },
+    {
+      $unwind: "$ligues",
+    },
+  ]);
   res.status(200).json({
     status: "success",
     data: seassons,

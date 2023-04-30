@@ -14,5 +14,13 @@ const matchSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  homeGoal: {
+    type: Number,
+    required: true,
+  },
+  awayGoal: {
+    type: Number,
+    required: true,
+  },
 });
 exports.Match = mongoose.model("Match", matchSchema);

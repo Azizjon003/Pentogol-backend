@@ -107,6 +107,7 @@ exports.getLigue = catchAsync(async (req, res, next) => {
             points: "$teamseasons.points",
             ballRatio: "$teamseasons.ballRatio",
             numberMatches: "$teamseasons.numberMatches",
+            IdSession: "$teamseasons._id",
           },
         },
         // seasons: "seasons",

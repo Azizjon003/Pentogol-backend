@@ -25,6 +25,7 @@ exports.upload = async (req, res, next) => {
 
     next();
   } catch (err) {
+    console.log(err);
     next(new AppError(err.message, 400));
   }
 };
