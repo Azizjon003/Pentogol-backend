@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 
 const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
-const sortData = require("../utility/teamsSort");
 exports.getAllLigues = catchAsync(async (req, res, next) => {
   const ligues = await Ligue.find();
   res.status(200).json({

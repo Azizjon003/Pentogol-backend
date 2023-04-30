@@ -11,9 +11,19 @@ exports.addMatches = catchAsync(async (req, res, next) => {
   const startTime = req.body.startTime;
   let homeGoals;
   let awayGoals;
-  if (startTime > Date.now()) {
+  if (new Date(startTime).getTime() > new Date().getTime()) {
     homeGoals = 0;
     awayGoals = 0;
+    const create = await Match.create({
+      homeTeam: home,
+      awayTeam: away,
+      homeGoal: homeGoals,
+      awayGoal: awayGoals,
+      startTime: startTime,
+    });
+    return res.status(200).json({
+      status: "success",
+    });
   } else {
     homeGoals = req.body.homeGoal || 0;
     awayGoals = req.body.awayGoal || 0;

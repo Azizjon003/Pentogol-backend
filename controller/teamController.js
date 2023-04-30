@@ -233,8 +233,8 @@ exports.getFeatureMatch = catchAsync(async (req, res, next) => {
 
             awayTeam: "$matches.awayTeam",
 
-            homeTeamScore: "$matches.homeTeam",
-            awayTeamScore: "$matches.awayTeam",
+            homeTeamScore: "$matches.homeGoal",
+            awayTeamScore: "$matches.awayGoal",
             startTime: "$matches.startTime",
           },
         },
