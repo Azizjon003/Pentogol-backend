@@ -1,5 +1,6 @@
 const { Ligue } = require("../model/games/ligue");
 const { Teams } = require("../model/games/teams");
+const { TeamSeason } = require("../model/games/teamsesson");
 const mongoose = require("mongoose");
 
 const catchAsync = require("../utility/catchAsync");
@@ -45,6 +46,19 @@ exports.getLigue = catchAsync(async (req, res, next) => {
     return next(new AppError("Please provide start and end time", 400));
   }
   console.log(id);
+  // Ligue modeli uchun indeks yaratish
+  Ligue.collection.createIndex({ _id: 1 });
+
+  // Teams modeli uchun indekslar yaratish
+  Teams.collection.createIndex({ ligueId: 1 });
+  Teams.collection.createIndex({ _id: 1 });
+
+  // TeamSeasons modeli uchun indekslar yaratish
+  TeamSeason.collection.createIndex({ teamId: 1 });
+  TeamSeason.collection.createIndex({ _id: 1 });
+
+  // Seassons modeli uchun indekslar yaratish
+
   const ligue = await Ligue.aggregate([
     {
       $match: {
@@ -113,6 +127,28 @@ exports.getLigue = catchAsync(async (req, res, next) => {
       },
     },
   ]);
+  // const ligue = await Ligue.aggregate([
+  //   {
+  //     $lookup: {
+  //       from: "seassons",
+  //       let: { ligueId: "$_id", startTime: startTime, endTime: endTime },
+  //       pipeline: [
+  //         {
+  //           $match: {
+  //             $expr: {
+  //               $and: [
+  //                 { $eq: ["$ligueId", "$$ligueId"] },
+  //                 { $gte: ["$startTime", "$$startTime"] },
+  //                 { $lte: ["$endTime", "$$endTime"] },
+  //               ],
+  //             },
+  //           },
+  //         },
+  //       ],
+  //       as: "seassons",
+  //     },
+  //   },
+  // ]);
   res.status(200).json({
     status: "success",
     data: ligue,

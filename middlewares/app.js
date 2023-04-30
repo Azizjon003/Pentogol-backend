@@ -16,6 +16,7 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/v1/teamsession", require("../routes/teamSessionRoute"));
+app.use("/api/v1/auth", require("../routes/authRoute"));
 app.use("/api/v1/ligues", require("../routes/ligueRoutes"));
 app.use("/api/v1/teams", require("../routes/teamsRoute"));
 app.use("/api/v1/news", require("../routes/newsRoute"));
