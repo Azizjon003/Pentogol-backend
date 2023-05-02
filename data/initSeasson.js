@@ -1,8 +1,9 @@
+
 require("dotenv").config();
-const mongoose = require("mongoose");
-const connection = require("../model/connection");
-const { Ligue } = require("../model/games/ligue");
-const { Seasson } = require("../model/games/season");
+const db = require("../model/connection");
+require("../model/connection");
+const Liga = db.liga;
+const Seasson = db.seasons;
 let data = [
   {
     startTime: new Date("08-09-2021"),
@@ -55,49 +56,51 @@ let data4 = [
 ];
 
 async function initSeasson() {
-  await connection(process.env.DB, process.env.DB_PASS);
-  await Seasson.deleteMany({});
-  const ligue = await Ligue.find({});
+
+
+  const ligue = await Liga.findAll({});
+  console.log(ligue[0]);
   data = data.map((el) => {
-    el.ligueId = ligue[0]._id;
+    el.ligaId = ligue[0].dataValues.id;
     el.startTime = new Date(el.startTime).getFullYear();
     el.endTime = new Date(el.endTime).getFullYear();
     return el;
   });
   console.log(data);
   data1 = data1.map((el) => {
-    el.ligueId = ligue[1]._id;
+    el.ligaId = ligue[1].dataValues.id;
 
     el.startTime = new Date(el.startTime).getFullYear();
     el.endTime = new Date(el.endTime).getFullYear();
     return el;
   });
   data2 = data2.map((el) => {
-    el.ligueId = ligue[2]._id;
+    el.ligaId = ligue[2].dataValues.id;
 
     el.startTime = new Date(el.startTime).getFullYear();
     el.endTime = new Date(el.endTime).getFullYear();
     return el;
   });
   data3 = data3.map((el) => {
-    el.ligueId = ligue[3]._id;
+    el.ligaId = ligue[3].dataValues.id;
 
     el.startTime = new Date(el.startTime).getFullYear();
     el.endTime = new Date(el.endTime).getFullYear();
     return el;
   });
   data4 = data4.map((el) => {
-    el.ligueId = ligue[4]._id;
+    el.ligaId = ligue[4].dataValues.id;
 
     el.startTime = new Date(el.startTime).getFullYear();
     el.endTime = new Date(el.endTime).getFullYear();
     return el;
   });
-  await Seasson.insertMany(data);
-  await Seasson.insertMany(data1);
-  await Seasson.insertMany(data2);
-  await Seasson.insertMany(data3);
-  await Seasson.insertMany(data4);
+  console.log(data)
+  await Seasson.bulkCreate(data);
+  await Seasson.bulkCreate(data1);
+  await Seasson.bulkCreate(data2);
+  await Seasson.bulkCreate(data3);
+  await Seasson.bulkCreate(data4);
 }
 
 initSeasson();

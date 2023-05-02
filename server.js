@@ -1,11 +1,9 @@
 require("dotenv").config();
 
 const app = require("./middlewares/app");
-const connection = require("./model/connection");
+
 const port = process.env.PORT || 3000;
-const DB = process.env.DB;
-const DB_PASS = process.env.DB_PASS;
-connection(DB, DB_PASS);
+ require("./model/connection")
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

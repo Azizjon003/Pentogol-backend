@@ -15,13 +15,7 @@ app.use(
 );
 
 app.use(express.static(path.join(__dirname, "../public")));
-app.use("/api/v1/teamsession", require("../routes/teamSessionRoute"));
-app.use("/api/v1/auth", require("../routes/authRoute"));
-app.use("/api/v1/ligues", require("../routes/ligueRoutes"));
-app.use("/api/v1/teams", require("../routes/teamsRoute"));
-app.use("/api/v1/news", require("../routes/newsRoute"));
-app.use("/api/v1/seasson", require("../routes/seassonRoute"));
-app.use("/api/v1/matches", require("../routes/teamMatchesRoute"));
+app.use("/api/v1/liga",require("../routes/ligueRoutes"))
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
