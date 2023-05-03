@@ -1,5 +1,5 @@
 const teamSessons = (sequelize,dataTypes)=>{
-  return sequelize.define('teamSessons',{
+  return sequelize.define('jamolar',{
     id:{
       type:dataTypes.UUID,
       defaultValue:dataTypes.UUIDV4,
@@ -32,7 +32,7 @@ const teamSessons = (sequelize,dataTypes)=>{
   },{
     timestamps:false,
     freezeTableName:true,
-    tableName:"teamSeassons"
+    tableName:"jamolar"
   })
 }
 module.exports = teamSessons

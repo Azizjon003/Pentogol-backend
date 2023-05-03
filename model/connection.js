@@ -31,42 +31,60 @@ db.teams = require("./teams")(sequelize,DataTypes);
 db.teamsSeasons = require("./temsSeasons")(sequelize,DataTypes);
 db.matches = require("./matches")(sequelize,DataTypes);
 
-//db.liga joined start
-db.liga.belongsTo(db.teams, {
-  foreignKey: "ligaId",
-  targetKey: "id",
-});
-db.liga.belongsTo(db.seasons, {
-  foreignKey: "ligaId",
-  targetKey: "id",
-});
-db.liga.belongsTo(db.teamsSeasons, {
-  foreignKey: "ligaId",
-  targetKey: "id",
-});
-// db.liga joined end
+db.liga.hasMany(db.seasons,{
+  foreignKey:"ligaId",
+  as:"seasons"
 
-//db.seasons joined start
-db.seasons.belongsTo(db.teamsSeasons, {
-  foreignKey: "seasonId",
-  targetKey: "id",
-});
-// db.seasons joined end
-
-//db.teams joined start
-db.teams.belongsTo(db.teamsSeasons, {
-  foreignKey: "teamId",
-  targetKey: "id",
-});
-
-// db.teams joined end
-
-//db.teamsSeasons joined start
-db.teamsSeasons.belongsTo(db.matches,{
-  foreignKey: "homeTeam",
-  targetKey: "id",
 })
-// db.teamsSeasons joined end
+db.seasons.belongsTo(db.liga,{
+  foreignKey:"ligaId",
+  as:"liga"
+})
+
+db.seasons.hasMany(db.teamsSeasons,{
+  foreignKey:"sessionId",
+  as:"jamolar"
+})
+db.liga.hasMany(db.teamsSeasons,{
+  foreignKey:"ligaId",
+  as:"jamolar"
+})
+db.teamsSeasons.belongsTo(db.liga,{
+  foreignKey:"ligaId",
+  as:"liga"
+})
+
+db.teamsSeasons.belongsTo(db.seasons,{
+  foreignKey:"sessionId",
+  as:"season"
+})
+db.liga.hasMany(db.teams,{
+  foreignKey:"ligaId",
+  as:"teams"
+})
+db.teams.belongsTo(db.liga,{
+  foreignKey:"ligaId",
+  as:"liga"
+})
+db.teams.hasMany(db.teamsSeasons,{
+  foreignKey:"teamId",
+  as:"jamolar"
+})
+db.teamsSeasons.belongsTo(db.teams,{
+  foreignKey:"teamId",
+  as:"team"
+})
+
+db.teamsSeasons.hasMany(db.matches,{
+  foreignKey:"homeTeam",
+  as:"matches"
+})
+
+db.matches.belongsTo(db.teamsSeasons,{
+  foreignKey:"homeTeam",
+  as:"matches"
+})
+
 
 // db.sequelize.sync({
 //   alter:true,
