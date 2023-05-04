@@ -16,6 +16,8 @@ app.use(
 
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/v1/liga",require("../routes/ligueRoutes"))
+app.use("/api/v1/seasson",require("../routes/seassonRoute"))
+app.use("/api/v1/matches",require("../routes/teamMatchesRoute"))
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });

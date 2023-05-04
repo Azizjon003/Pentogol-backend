@@ -16,44 +16,54 @@ exports.getOneLigueComands = catchAsync(async (req, res, next) => {
   const startTime = req.query.startTime || 2021;
   const endTime = req.query.endTime || 2022;
   console.log(startTime, endTime);
-  const data = await Liga.findByPk(req.params.id, {
-    include: [
-      {
-        model: db.seasons,
-        as: "seasons",
-        include: [
-          {
-            model: db.teamsSeasons,
-            as: "jamolar",
-            include: [
-              {
-                model: db.teams,
-                as: "team",
-                attributes: ["id", "name","image"],
-              },
+  const data = await Liga.findOne(
+    {
+      where: {
+        id: req.params.id,
+      },
+      include: [
+        {
+          model: db.seasons,
+          as: "seasons",
+          include: [
+            {
+              model: db.teamsSeasons,
+              as: "jamolar",
+              include: [
+                {
+                  model: db.teams,
+                  as: "team",
+                  attributes: ["id", "name", "image"],
+                },
+              ],
 
-            ],
-            attributes: ["id", "teamId","points","currentTur"],
-            order:[
-              ["points","DESC"],
-              ["goalRatio","DESC"],
+              attributes: ["id", "teamId", "points", "goalRatio", "currentTur"],
+              // orders: [["points", "DESC"]],
+            },
+          ],
+          where: {
+            [db.Op.and]: [
+              { startTime: { [db.Op.gte]: startTime } },
+              { endTime: { [db.Op.lte]: endTime } },
             ],
           },
-        ],
-        where: {
-          [db.Op.and]: [
-            { startTime: { [db.Op.gte]: startTime } },
-            { endTime: { [db.Op.lte]: endTime } },
-          ],
 
+          attributes: ["id", "startTime", "endTime"],
         },
-       
-        attributes: ["id", "startTime", "endTime"],
-      },
-      
-    ],
-    attributes: ["id", "name","seasons.id","seasons.startTime","seasons.endTime"],
-  });
+      ],
+      attributes: ["id", "name", "seasons.id"],
+    },
+    {
+      orders: [
+        [
+          { model: db.seasons, as: "liga" },
+          { model: db.teamsSeasons, as: "jamolar" },
+          "points",
+          "DESC",
+        ],
+      ],
+    }
+  );
 
   res.status(200).json({
     status: "OK",
