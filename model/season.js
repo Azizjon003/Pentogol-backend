@@ -21,7 +21,14 @@ const season = (sequelize,DataTypes)=>{
   },{
     tableName:'season',
     freezeTableName:true,
-    timestamps:false
+    timestamps:false,
+    indexes: [
+      {
+        unique: true,
+        fields: ["startTime", "endTime", "ligaId"],
+      },
+    ],
+   
   })
 
   return Season

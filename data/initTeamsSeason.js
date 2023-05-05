@@ -53,4 +53,4 @@ async function initTeamsSeason() {
    await TeamSeason.bulkCreate(data);
 }
 
-initTeamsSeason();
+module.exports = initTeamsSeason;

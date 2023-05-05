@@ -30,34 +30,6 @@ exports.addMatches = catchAsync(async (req, res, next) => {
     return next(new AppError("This team doesn't exist", 400));
   }
 
-  console.log(Home);
-
-  const checkSeasons = await db.seasons.findOne({
-    where: {
-      id: Home.sessionId,
-    },
-  });
-
-  const start = new Date(startTime).getFullYear();
-  console.log(start, checkSeasons.startTime, checkSeasons.endTime);
-  if (!(checkSeasons.startTime <= start && checkSeasons.endTime >= start)) {
-    return next(new AppError("This team doesn't exist.Time ended", 400));
-  }
-  console.log("ishladi");
-
-  const check = await Match.findOne({
-    where: {
-      [db.Op.and]: [
-        { homeTeam: home },
-        { awayTeam: away },
-        { startTime: startTime },
-      ],
-    },
-  });
-
-  if (check) {
-    return next(new AppError("This match already exists", 400));
-  }
   if (new Date(startTime).getTime() > new Date().getTime()) {
     homeGoals = 0;
     awayGoals = 0;
@@ -118,44 +90,44 @@ exports.addMatches = catchAsync(async (req, res, next) => {
     status: "success",
   });
 });
-exports.updateMatch = catchAsync(async (req, res, next) => {
-  const home = req.body.home;
-  const away = req.body.away;
-  const startTime = req.body.startTime;
-  const homeGoals = req.body.homeGoals;
-  const awayGoals = req.body.awayGoals;
-  if (startTime > Date.now()) {
-    return next(new AppError("Match is not updated yet", 400));
-  }
+// exports.updateMatch = catchAsync(async (req, res, next) => {
+//   const home = req.body.home;
+//   const away = req.body.away;
+//   const startTime = req.body.startTime;
+//   const homeGoals = req.body.homeGoals;
+//   const awayGoals = req.body.awayGoals;
+//   if (startTime > Date.now()) {
+//     return next(new AppError("Match is not updated yet", 400));
+//   }
 
-  const create = await Match.update(
-    {
-      home: home,
-      away: away,
-      homeGoal: homeGoals,
-      awayGoal: awayGoals,
-      startTime: startTime,
-    },
-    {
-      where: {
-        [db.Op.and]: [
-          {
-            home: home,
-          },
-          {
-            away: away,
-          },
-        ],
-      },
-    }
-  );
-  const data = await Match.findOne({
-    where: {
-      home: home,
-    },
-  });
-  res.status(200).json({
-    status: "success",
-    data: data,
-  });
-});
+//   const create = await Match.update(
+//     {
+//       home: home,
+//       away: away,
+//       homeGoal: homeGoals,
+//       awayGoal: awayGoals,
+//       startTime: startTime,
+//     },
+//     {
+//       where: {
+//         [db.Op.and]: [
+//           {
+//             home: home,
+//           },
+//           {
+//             away: away,
+//           },
+//         ],
+//       },
+//     }
+//   );
+//   const data = await Match.findOne({
+//     where: {
+//       home: home,
+//     },
+//   });
+//   res.status(200).json({
+//     status: "success",
+//     data: data,
+//   });
+// });

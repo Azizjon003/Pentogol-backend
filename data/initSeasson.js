@@ -103,4 +103,4 @@ async function initSeasson() {
   await Seasson.bulkCreate(data4);
 }
 
-initSeasson();
+module.exports = initSeasson;

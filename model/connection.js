@@ -81,19 +81,16 @@ db.teamsSeasons.hasMany(db.matches, {
 
 db.matches.belongsTo(db.teamsSeasons, {
   foreignKey: "homeTeam",
-  as: "matches",
+  as: "jamolar",
 });
+// db.sequelize.query("CREATE UNIQUE INDEX IF NOT EXISTS jamolar_index ON jamolar (sessionId, teamId, ligaId)")
 
-// db.sequelize
-//   .sync({
-//     alter: true,
-//     force: true,
-//   })
-//   .then(() => {
-//     console.log("saqlandi");
-//   })
-//   .catch((er) => {
-//     console.log(err);
-//   });
-
+// db.sequelize.sync({
+//   alter:true,
+//   force:true
+// }).then(()=>{
+//   console.log("Ishladi")
+// }).catch(er=>{
+//   console.log(er)
+// })
 module.exports = db;

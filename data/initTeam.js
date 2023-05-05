@@ -299,4 +299,4 @@ const initTeams = async () => {
     console.log(err);
   }
 };
-initTeams();
+module.exports = initTeams;

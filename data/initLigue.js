@@ -39,4 +39,4 @@ async function initLigue() {
   }
 }
 
-initLigue();
+module.exports = initLigue;
