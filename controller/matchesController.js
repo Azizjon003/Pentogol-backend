@@ -21,6 +21,43 @@ exports.addMatches = catchAsync(async (req, res, next) => {
       id: away,
     },
   });
+
+  if (!Home || !Away) {
+    return next(new AppError("This team doesn't exist", 400));
+  }
+
+  if (Home.sessionId !== Away.sessionId) {
+    return next(new AppError("This team doesn't exist", 400));
+  }
+
+  console.log(Home);
+
+  const checkSeasons = await db.seasons.findOne({
+    where: {
+      id: Home.sessionId,
+    },
+  });
+
+  const start = new Date(startTime).getFullYear();
+  console.log(start, checkSeasons.startTime, checkSeasons.endTime);
+  if (!(checkSeasons.startTime <= start && checkSeasons.endTime >= start)) {
+    return next(new AppError("This team doesn't exist.Time ended", 400));
+  }
+  console.log("ishladi");
+
+  const check = await Match.findOne({
+    where: {
+      [db.Op.and]: [
+        { homeTeam: home },
+        { awayTeam: away },
+        { startTime: startTime },
+      ],
+    },
+  });
+
+  if (check) {
+    return next(new AppError("This match already exists", 400));
+  }
   if (new Date(startTime).getTime() > new Date().getTime()) {
     homeGoals = 0;
     awayGoals = 0;
@@ -40,28 +77,33 @@ exports.addMatches = catchAsync(async (req, res, next) => {
   }
   if (homeGoals > awayGoals) {
     Home.points = Home.points + 3;
-    Home.ballRatio = Home.ballRatio + awayGoals - homeGoals;
+    Home.goalRatio = Home.goalRatio + (homeGoals - awayGoals);
+    console.log(Home.goalRatio);
     await Home.save();
 
-    Away.ballRatio = Away.ballRatio + awayGoals - homeGoals;
+    Away.goalRatio = Away.goalRatio + (awayGoals - homeGoals);
     await Away.save();
   }
   if (homeGoals < awayGoals) {
     Home.points = Home.points;
-    Home.ballRatio = Home.ballRatio + homeGoals - awayGoals;
+    Home.goalRatio = Home.goalRatio + (homeGoals - awayGoals);
     await Home.save();
 
     Away.points = Away.points + 3;
-    Away.ballRatio = Away.ballRatio + awayGoals - homeGoals;
+    Away.goalRatio = Away.goalRatio + (awayGoals - homeGoals);
     await Away.save();
   }
-  if (homeGoals === awayGoals && startTime < Date.now()) {
+  if (
+    homeGoals === awayGoals &&
+    new Date(startTime).getTime() < new Date().getTime()
+  ) {
+    console.log("Durang");
     Home.points = Home.points + 1;
-    // Home.ballRatio = Home.ballRatio + homeGoals - awayGoals;
+    // Home.goalRatio = Home.goalRatio + homeGoals - awayGoals;
     await Home.save();
 
     Away.points = Away.points + 1;
-    // Away.ballRatio = Away.ballRatio + awayGoals - homeGoals;
+    // Away.goalRatio = Away.goalRatio + awayGoals - homeGoals;
     await Away.save();
   }
   const create = await Match.create({
@@ -85,6 +127,7 @@ exports.updateMatch = catchAsync(async (req, res, next) => {
   if (startTime > Date.now()) {
     return next(new AppError("Match is not updated yet", 400));
   }
+
   const create = await Match.update(
     {
       home: home,
@@ -93,13 +136,24 @@ exports.updateMatch = catchAsync(async (req, res, next) => {
       awayGoal: awayGoals,
       startTime: startTime,
     },
-    { home: home, away: away }
+    {
+      where: {
+        [db.Op.and]: [
+          {
+            home: home,
+          },
+          {
+            away: away,
+          },
+        ],
+      },
+    }
   );
   const data = await Match.findOne({
-    where:{
-      home:home,
-    }
-  })
+    where: {
+      home: home,
+    },
+  });
   res.status(200).json({
     status: "success",
     data: data,
