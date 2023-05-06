@@ -5,22 +5,6 @@ const db = require("../model/connection");
 const Liga = db.liga;
 const Teams = db.teams;
 const TeamSeason = db.teamsSeasons;
-// exports.AddTeam = catchAsync(async (req, res, next) => {
-//   const ligueId = req.params.ligId;
-//   if (mongoose.Types.ObjectId.isValid(ligueId) === false) {
-//     return next(new AppError("No ligue found with that ID", 404));
-//   }
-//   const teams = await Teams.find({ ligueId: ligueId, name: req.body.name });
-//   if (teams) {
-//     return next(new AppError("Team already exist", 404));
-//   }
-//   req.body.ligueId = req.params.ligId;
-//   const team = await Teams.create(req.body);
-//   res.status(201).json({
-//     status: "success",
-//     data: team,
-//   });
-// });
 
 exports.getMatch = catchAsync(async (req, res, next) => {
   console.log(req.params);
@@ -46,7 +30,19 @@ exports.getMatch = catchAsync(async (req, res, next) => {
                 model: db.matches,
                 as: "matches",
                 where: {
-                  [db.Op.and]: [{ awayGoal: { [db.Op.gte]: 0 } }],
+                  [db.Op.and]: [
+                    { awayGoal: { [db.Op.gte]: -1 } },
+                  ],
+                  [db.Op.and]: [
+                    {
+                      startTime: {
+                        [db.Op.lte]: new Date(),
+                        [db.Op.gte]: new Date(
+                          new Date().getTime() - 8 * 24 * 60 * 60 * 1000
+                        ),
+                      },
+                    },
+                  ]
                 },
               },
             ],
@@ -68,6 +64,7 @@ exports.getMatch = catchAsync(async (req, res, next) => {
   if (!data) {
     return next(new AppError("No ligue found with that ID", 404));
   }
+  console.log(data.seasons[0].matches);
   let resData = [];
   for (let i = 0; i < data.seasons[0].jamolar.length; i++) {
     const match = data.seasons[0].jamolar[i].matches[0].awayTeam;
@@ -92,7 +89,7 @@ exports.getMatch = catchAsync(async (req, res, next) => {
       homeGoal: data.seasons[0].jamolar[i].matches[0].homeGoal,
       awayGoal: data.seasons[0].jamolar[i].matches[0].awayGoal,
     };
-    resData.push(obj)
+    resData.push(obj);
   }
 
   res.status(200).json({

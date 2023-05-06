@@ -30,6 +30,7 @@ db.seasons = require("./season")(sequelize, DataTypes);
 db.teams = require("./teams")(sequelize, DataTypes);
 db.teamsSeasons = require("./temsSeasons")(sequelize, DataTypes);
 db.matches = require("./matches")(sequelize, DataTypes);
+db.news = require("./news")(sequelize, DataTypes);
 
 db.liga.hasMany(db.seasons, {
   foreignKey: "ligaId",

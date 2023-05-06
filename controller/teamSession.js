@@ -1,17 +1,12 @@
-const { Teams } = require("../model/games/teams");
-
-const { Ligue } = require("../model/games/ligue");
 const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
-const mongoose = require("mongoose");
-const { TeamSeason } = require("../model/games/teamsesson");
+const db = require("../model/connection");
+const TeamSeason = db.teamsSeasons;
 
 exports.AddTeamSession = catchAsync(async (req, res, next) => {
-  console.log(req.params);
+ 
   const seassonId = req.params.id;
-  if (mongoose.Types.ObjectId.isValid(seassonId) === false) {
-    return next(new AppError("No seasson found with that ID", 404));
-  }
+ 
 
   console.log(req.body);
   const teams = req.body.teams;
@@ -22,11 +17,11 @@ exports.AddTeamSession = catchAsync(async (req, res, next) => {
       numberMatches: 0,
       points: 0,
       ballRatio: 0,
+      ligaId: req.body.ligaId,
     };
   });
 
-  let team = [];
-  console.log(data);
+  let team = []
   for (let i = 0; i < data.length; i++) {
     let datacha = await TeamSeason.create(data[i]);
     team.push(datacha);
