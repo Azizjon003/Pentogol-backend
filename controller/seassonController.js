@@ -1,14 +1,12 @@
-const { Teams } = require("../model/games/teams");
-
-const { Ligue } = require("../model/games/ligue");
-const { Seasson } = require("../model/games/season");
+const db = require("../model/connection");
+const Seasson = db.seasons;
+const Teams = db.teams;
+const Liga = db.liga;
+const TeamsSeasons = db.teamsSeasons;
 const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
-const mongoose = require("mongoose");
+
 exports.addSeasson = catchAsync(async (req, res, next) => {
-  if (!mongoose.Types.ObjectId.isValid(req.body.ligueId)) {
-    return next(new AppError("Invalid ligue id", 400));
-  }
   const startDate = new Date(req.body.startTime).getFullYear();
   const endDate = new Date(req.body.endTime).getFullYear();
   console.log(startDate, endDate);
@@ -17,9 +15,11 @@ exports.addSeasson = catchAsync(async (req, res, next) => {
   }
 
   const data = await Seasson.findOne({
-    ligueId: req.body.ligueId,
-    startTime: startDate,
-    endTime: endDate,
+    where: {
+      ligaId: req.body.ligaId,
+      startTime: startDate,
+      endTime: endDate,
+    },
   });
   console.log("Salom", data);
   if (data) {
@@ -28,7 +28,7 @@ exports.addSeasson = catchAsync(async (req, res, next) => {
   console.log(req.body);
   console.log(endDate);
   const seasson = await Seasson.create({
-    ligueId: req.body.ligueId,
+    ligaId: req.body.ligaId,
     startTime: startDate,
     endTime: endDate,
   });
@@ -38,19 +38,14 @@ exports.addSeasson = catchAsync(async (req, res, next) => {
   });
 });
 exports.getSeassons = catchAsync(async (req, res, next) => {
-  const seassons = await Seasson.aggregate([
-    {
-      $lookup: {
-        from: "ligues",
-        localField: "ligueId",
-        foreignField: "_id",
-        as: "ligues",
+  const seassons = await Seasson.findAll({
+    include: [
+      {
+        model: Liga,
+        as: "liga",
       },
-    },
-    {
-      $unwind: "$ligues",
-    },
-  ]);
+    ],
+  });
   res.status(200).json({
     status: "success",
     data: seassons,

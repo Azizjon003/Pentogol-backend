@@ -1,17 +1,15 @@
-const { Ligue } = require("../model/games/ligue");
-const { Teams } = require("../model/games/teams");
-const { News } = require("../model/news/news");
-const mongoose = require("mongoose");
+const db = require("../model/connection");
+const News = db.news;
 
 const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
 
 exports.getAllNews = catchAsync(async (req, res, next) => {
-  let news = await News.find({}).sort({ createdAt: -1 });
+  let news = await News.findAll();
 
   news = news.map((el) => {
     return {
-      _id: el._id,
+      id: el.id,
       title: el.title,
       image: el.image,
       description: el.description,
@@ -26,10 +24,11 @@ exports.getAllNews = catchAsync(async (req, res, next) => {
 });
 exports.getNews = catchAsync(async (req, res, next) => {
   const id = req.params.id;
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return next(new AppError("Bunday yangilik mavjud emas", 404));
-
-  const news = await News.findById(req.params.id);
+  const news = await News.findOne({
+    where: {
+      id: req.params.id,
+    },
+  });
   if (!news) return next(new AppError("Bunday yangilik mavjud emas", 404));
   res.status(200).json({
     status: "success",
@@ -49,32 +48,13 @@ exports.createNews = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateNews = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return next(new AppError("Bunday yangilik mavjud emas", 404));
-
-  const data = await News.findOne({ _id: id });
-  const file = req.imageUrl;
-  req.body.image = file || data.image;
-
-  await News.updateOne({ _id: id }, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  const product = await News.findOne({ _id: id });
-  res.status(200).json({
-    status: "success",
-    data: product,
-  });
-});
-
 exports.deleteNews = catchAsync(async (req, res, next) => {
   const id = req.params.id;
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return next(new AppError("Bunday yangilik mavjud emas", 404));
-
-  await News.deleteOne({ _id: id });
+  await News.destroy({
+    where: {
+      id: id,
+    },
+  });
   res.status(204).json({
     status: "success",
     data: null,

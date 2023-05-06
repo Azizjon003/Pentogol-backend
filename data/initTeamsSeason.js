@@ -1,55 +1,56 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const connection = require("../model/connection");
-const { Ligue } = require("../model/games/ligue");
-
-const { TeamSeason } = require("../model/games/teamsesson");
+require("../model/connection");
+const db = require("../model/connection");
+const sequelize = db.sequelize;
+const Liga = db.liga;
+const Seasson = db.seasons;
+const TeamSeason = db.teamsSeasons;
+const Teams = db.teams;
 
 const randomFunc = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
 async function initTeamsSeason() {
-  connection(process.env.DB, process.env.DB_PASS);
-  const ligue = await Ligue.aggregate([
-    {
-      $lookup: {
-        from: "teams",
-        localField: "_id",
-        foreignField: "ligueId",
+  const ligue = await Liga.findAll({
+    include: [
+      {
+        model: Seasson,
+        as: "seasons",
+      }
+      ,
+      {
+        model: Teams,
         as: "teams",
-      },
-    },
-    {
-      $lookup: {
-        from: "seassons",
-        localField: "_id",
-        foreignField: "ligueId",
-        as: "seassons",
-      },
-    },
-  ]);
-  // console.log(ligue);
+      }
+    ],
+
+  });
+  // console.log(ligue[0]);
+
   let data = [];
   for (let i = 0; i < ligue.length; i++) {
-    console.log(ligue[i].teams[i]._id);
-    let matches = randomFunc(0, 38);
+    console.log(ligue[i].teams[i].id);
+    
     let datacha = [];
     datacha = ligue[i].teams.map((el) => {
       let datacha = {
-        sessionId: ligue[i].seassons[0]._id,
-        points: randomFunc(0, 90),
-        ballRatio: randomFunc(-50, 100),
-        numberMatches: matches,
-        teamId: el._id,
+        sessionId: ligue[i].seasons[0].id,
+        points: 0,
+        ballRatio: 0,
+        numberMatches:0,
+        ligaId: ligue[i].id,
+        teamId: el.id,
       };
       return datacha;
     });
     data = [...datacha, ...data];
   }
   console.log(data[50]);
-  await TeamSeason.deleteMany({});
-  await TeamSeason.insertMany(data);
+  
+   await TeamSeason.bulkCreate(data);
 }
 
-initTeamsSeason();
+module.exports = initTeamsSeason;

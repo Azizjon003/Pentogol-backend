@@ -1,9 +1,9 @@
 require("dotenv").config();
-const mongoose = require("mongoose");
-const connection = require("../model/connection");
-const { Ligue } = require("../model/games/ligue");
-const { Teams } = require("../model/games/teams");
-
+const db = require("../model/connection");
+require("../model/connection");
+const Liga = db.liga;
+const Seasson = db.seasons;
+const Teams = db.teams;
 let data = [
   {
     name: "Liverpool",
@@ -115,7 +115,10 @@ let data2 = [
     name: "Real Madrid",
     image: "https://cdn-icons-png.flaticon.com/512/824/824734.png",
   },
-  { name: "Atletico Madrid" },
+  {
+    name: "Atletico Madrid",
+    image: "https://cdn-icons-png.flaticon.com/128/824/824733.png",
+  },
   {
     name: "Sevilla",
     image:
@@ -146,7 +149,10 @@ let data2 = [
     image:
       "https://as2.ftcdn.net/v2/jpg/03/60/48/59/1000_F_360485902_TR2WlWl68qqrXFtrs44YrOWpY7CSBe5U.jpg",
   },
-  { name: "Athletic Bilbao" },
+  {
+    name: "Athletic Bilbao",
+    image: "https://cdn-icons-png.flaticon.com/128/824/824735.png",
+  },
 ];
 let data3 = [
   {
@@ -254,40 +260,43 @@ let data4 = [
 ];
 
 const initTeams = async () => {
-  await connection(process.env.DB, process.env.DB_PASS);
-  await Teams.deleteMany({});
-  const ligue = await Ligue.find({});
-  data = data.map((el) => {
-    el.ligueId = ligue[0]._id;
+  try {
+    const ligue = await Liga.findAll({});
+    data = data.map((el) => {
+      el.ligaId = ligue[0].dataValues.id;
 
-    return el;
-  });
-  data1 = data1.map((el) => {
-    el.ligueId = ligue[1]._id;
+      return el;
+    });
+    console.log(data);
+    data1 = data1.map((el) => {
+      el.ligaId = ligue[1].dataValues.id;
 
-    return el;
-  });
-  data2 = data2.map((el) => {
-    el.ligueId = ligue[2]._id;
+      return el;
+    });
+    data2 = data2.map((el) => {
+      el.ligaId = ligue[2].dataValues.id;
 
-    return el;
-  });
-  data3 = data3.map((el) => {
-    el.ligueId = ligue[3]._id;
+      return el;
+    });
+    data3 = data3.map((el) => {
+      el.ligaId = ligue[3].dataValues.id;
 
-    return el;
-  });
-  data4 = data4.map((el) => {
-    el.ligueId = ligue[4]._id;
+      return el;
+    });
+    data4 = data4.map((el) => {
+      el.ligaId = ligue[4].dataValues.id;
 
-    return el;
-  });
+      return el;
+    });
 
-  await Teams.insertMany(data);
-  await Teams.insertMany(data1);
-  await Teams.insertMany(data2);
-  await Teams.insertMany(data3);
-  await Teams.insertMany(data4);
-  console.log("Teams init success");
+    await Teams.bulkCreate(data);
+    await Teams.bulkCreate(data1);
+    await Teams.bulkCreate(data2);
+    await Teams.bulkCreate(data3);
+    await Teams.bulkCreate(data4);
+    console.log("Teams init success");
+  } catch (err) {
+    console.log(err);
+  }
 };
-initTeams();
+module.exports = initTeams;

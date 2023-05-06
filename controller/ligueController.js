@@ -1,156 +1,74 @@
-const { Ligue } = require("../model/games/ligue");
-const { Teams } = require("../model/games/teams");
-const { TeamSeason } = require("../model/games/teamsesson");
-const mongoose = require("mongoose");
-
+const db = require("../model/connection");
+const Liga = db.liga;
 const catchAsync = require("../utility/catchAsync");
 const AppError = require("../utility/appError");
-exports.getAllLigues = catchAsync(async (req, res, next) => {
-  const ligues = await Ligue.find();
-  res.status(200).json({
-    status: "success",
-    data: ligues,
-  });
-});
-exports.addLigue = catchAsync(async (req, res, next) => {
-  const ligue = await Ligue.create(req.body);
-  res.status(201).json({
-    status: "success",
-    data: ligue,
-  });
-});
-exports.updateLigue = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const data = req.body;
-  let lig = await Ligue.updateOne({ _id: id }, data, {
-    new: true,
-    runValidators: true,
-  });
+
+exports.getAll = catchAsync(async (req, res, next) => {
+  const data = await Liga.findAll();
+  console.log(data);
 
   res.status(200).json({
-    status: "success",
-    data: lig,
+    status: "OK",
+    data,
   });
 });
-
-exports.getLigue = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const startTime = req.query.starttime * 1;
-  const endTime = req.query.endtime * 1;
-
-  if (!startTime || !endTime) {
-    return next(new AppError("Please provide start and end time", 400));
-  }
-
-  if (endTime - startTime !== 1) {
-    return next(new AppError("Please provide start and end time", 400));
-  }
-  console.log(id);
-  // Ligue modeli uchun indeks yaratish
-  Ligue.collection.createIndex({ _id: 1 });
-
-  // Teams modeli uchun indekslar yaratish
-  Teams.collection.createIndex({ ligueId: 1 });
-  Teams.collection.createIndex({ _id: 1 });
-
-  // TeamSeasons modeli uchun indekslar yaratish
-  TeamSeason.collection.createIndex({ teamId: 1 });
-  TeamSeason.collection.createIndex({ _id: 1 });
-
-  // Seassons modeli uchun indekslar yaratish
-
-  const ligue = await Ligue.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(id),
-      },
+exports.getOneLigueComands = catchAsync(async (req, res, next) => {
+  const startTime = req.query.startTime || 2021;
+  const endTime = req.query.endTime || 2022;
+  console.log(startTime, endTime);
+  const data = await Liga.findOne({
+    where: {
+      id: req.params.id,
     },
-    {
-      $lookup: {
-        from: "teams",
-        localField: "_id",
-        foreignField: "ligueId",
-        as: "teams",
-      },
-    },
-    {
-      $unwind: "$teams",
-    },
-    {
-      $lookup: {
-        from: "teamseasons",
-        localField: "teams._id",
-        foreignField: "teamId",
-        as: "teamseasons",
-      },
-    },
-    { $unwind: "$teamseasons" },
-    {
-      $lookup: {
-        from: "seassons",
-        localField: "_id",
-        foreignField: "ligueId",
-        pipeline: [
+    include: [
+      {
+        model: db.seasons,
+        as: "seasons",
+        include: [
           {
-            $match: {
-              startTime: { $gte: startTime },
-              endTime: { $lte: endTime },
-            },
+            model: db.teamsSeasons,
+            as: "jamolar",
+            include: [
+              {
+                model: db.teams,
+                as: "team",
+                attributes: ["id", "name", "image"],
+              },
+            ],
+
+            attributes: ["id", "teamId", "points", "goalRatio", "currentTur"],
+            // orders: [["points", "DESC"]],
           },
         ],
-        as: "seassons",
-      },
-    },
-    { $unwind: "$seassons" },
-    {
-      $sort: {
-        "teamseasons.points": -1,
-        "teamseasons.ballRatio": -1,
-      },
-    },
-
-    {
-      $group: {
-        _id: "$_id",
-        name: { $first: "$name" },
-        teams: {
-          $push: {
-            name: "$teams.name",
-            image: "$teams.image",
-            points: "$teamseasons.points",
-            ballRatio: "$teamseasons.ballRatio",
-            numberMatches: "$teamseasons.numberMatches",
-            IdSession: "$teamseasons._id",
-          },
+        where: {
+          [db.Op.and]: [
+            { startTime: { [db.Op.gte]: startTime } },
+            { endTime: { [db.Op.lte]: endTime } },
+          ],
         },
-        // seasons: "seasons",
+
+        attributes: ["id", "startTime", "endTime"],
       },
-    },
-  ]);
-  // const ligue = await Ligue.aggregate([
-  //   {
-  //     $lookup: {
-  //       from: "seassons",
-  //       let: { ligueId: "$_id", startTime: startTime, endTime: endTime },
-  //       pipeline: [
-  //         {
-  //           $match: {
-  //             $expr: {
-  //               $and: [
-  //                 { $eq: ["$ligueId", "$$ligueId"] },
-  //                 { $gte: ["$startTime", "$$startTime"] },
-  //                 { $lte: ["$endTime", "$$endTime"] },
-  //               ],
-  //             },
-  //           },
-  //         },
-  //       ],
-  //       as: "seassons",
-  //     },
-  //   },
-  // ]);
+    ],
+    attributes: ["id", "name", "seasons.id"],
+    order: [
+      [
+        { model: db.seasons, as: "seasons" },
+        { model: db.teamsSeasons, as: "jamolar" },
+        "points",
+        "DESC",
+      ],
+      [
+        { model: db.seasons, as: "seasons" },
+        { model: db.teamsSeasons, as: "jamolar" },
+        "goalRatio",
+        "DESC",
+      ],  
+    ],
+  });
+
   res.status(200).json({
-    status: "success",
-    data: ligue,
+    status: "OK",
+    data,
   });
 });

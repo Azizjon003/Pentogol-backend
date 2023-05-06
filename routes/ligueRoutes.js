@@ -1,11 +1,10 @@
 const Router = require("express").Router();
 const {
-  getAllLigues,
-  addLigue,
-  getLigue,
+  getAll,
+  getOneLigueComands
 } = require("../controller/ligueController");
 
-Router.route("/list").get(getAllLigues);
-Router.route("/list/:id").get(getLigue);
+Router.route("/").get(getAll);
+Router.route("/:id").get(getOneLigueComands);
 
 module.exports = Router;

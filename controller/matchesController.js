@@ -1,8 +1,8 @@
-const { Ligue } = require("../model/games/ligue");
-const { Teams } = require("../model/games/teams");
-const { TeamSeason } = require("../model/games/teamsesson");
-const { Match } = require("../model/games/matches");
+const db = require("../model/connection");
+const Match = db.matches;
+const TeamSeason = db.teamsSeasons;
 
+const AppError = require("../utility/appError");
 const catchAsync = require("../utility/catchAsync");
 
 exports.addMatches = catchAsync(async (req, res, next) => {
@@ -11,6 +11,25 @@ exports.addMatches = catchAsync(async (req, res, next) => {
   const startTime = req.body.startTime;
   let homeGoals;
   let awayGoals;
+  const Home = await TeamSeason.findOne({
+    where: {
+      id: home,
+    },
+  });
+  const Away = await TeamSeason.findOne({
+    where: {
+      id: away,
+    },
+  });
+
+  if (!Home || !Away) {
+    return next(new AppError("This team doesn't exist", 400));
+  }
+
+  if (Home.sessionId !== Away.sessionId) {
+    return next(new AppError("This team doesn't exist", 400));
+  }
+
   if (new Date(startTime).getTime() > new Date().getTime()) {
     homeGoals = 0;
     awayGoals = 0;
@@ -29,60 +48,36 @@ exports.addMatches = catchAsync(async (req, res, next) => {
     awayGoals = req.body.awayGoal || 0;
   }
   if (homeGoals > awayGoals) {
-    await TeamSeason.updateOne(
-      { _id: home },
-      { $inc: { points: 3, ballRatio: homeGoals - awayGoals } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    await TeamSeason.updateOne(
-      { _id: away },
-      { $inc: { points: 3, ballRatio: awayGoals - homeGoals } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    Home.points = Home.points + 3;
+    Home.goalRatio = Home.goalRatio + (homeGoals - awayGoals);
+    console.log(Home.goalRatio);
+    await Home.save();
+
+    Away.goalRatio = Away.goalRatio + (awayGoals - homeGoals);
+    await Away.save();
   }
   if (homeGoals < awayGoals) {
-    await TeamSeason.updateOne(
-      { _id: away },
-      { $inc: { points: 3, ballRatio: awayGoals - homeGoals } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    await TeamSeason.updateOne(
-      { _id: home },
-      { $inc: { ballRatio: awayGoals - homeGoals } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    Home.points = Home.points;
+    Home.goalRatio = Home.goalRatio + (homeGoals - awayGoals);
+    await Home.save();
+
+    Away.points = Away.points + 3;
+    Away.goalRatio = Away.goalRatio + (awayGoals - homeGoals);
+    await Away.save();
   }
-  if (homeGoals === awayGoals && startTime < Date.now()) {
-    await TeamSeason.updateOne(
-      { _id: home },
-      { $inc: { points: 1, ballRatio: 1 } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    await TeamSeason.updateOne(
-      { _id: away },
-      { $inc: { points: 1, ballRatio: 1 } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+  if (
+    homeGoals === awayGoals &&
+    new Date(startTime).getTime() < new Date().getTime()
+  ) {
+    console.log("Durang");
+    Home.points = Home.points + 1;
+    // Home.goalRatio = Home.goalRatio + homeGoals - awayGoals;
+    await Home.save();
+
+    Away.points = Away.points + 1;
+    // Away.goalRatio = Away.goalRatio + awayGoals - homeGoals;
+    await Away.save();
   }
-  console.log(home);
   const create = await Match.create({
     homeTeam: home,
     awayTeam: away,
@@ -95,27 +90,44 @@ exports.addMatches = catchAsync(async (req, res, next) => {
     status: "success",
   });
 });
-exports.updateMatch = catchAsync(async (req, res, next) => {
-  const home = req.body.home;
-  const away = req.body.away;
-  const startTime = req.body.startTime;
-  const homeGoals = req.body.homeGoals;
-  const awayGoals = req.body.awayGoals;
-  if (startTime > Date.now()) {
-    return next(new AppError("Match is not updated yet", 400));
-  }
-  const create = await Match.updateOne(
-    { home: home, away: away },
-    {
-      home: home,
-      away: away,
-      homeGoal: homeGoals,
-      awayGoal: awayGoals,
-      startTime: startTime,
-    }
-  );
-  res.status(200).json({
-    status: "success",
-    data: create,
-  });
-});
+// exports.updateMatch = catchAsync(async (req, res, next) => {
+//   const home = req.body.home;
+//   const away = req.body.away;
+//   const startTime = req.body.startTime;
+//   const homeGoals = req.body.homeGoals;
+//   const awayGoals = req.body.awayGoals;
+//   if (startTime > Date.now()) {
+//     return next(new AppError("Match is not updated yet", 400));
+//   }
+
+//   const create = await Match.update(
+//     {
+//       home: home,
+//       away: away,
+//       homeGoal: homeGoals,
+//       awayGoal: awayGoals,
+//       startTime: startTime,
+//     },
+//     {
+//       where: {
+//         [db.Op.and]: [
+//           {
+//             home: home,
+//           },
+//           {
+//             away: away,
+//           },
+//         ],
+//       },
+//     }
+//   );
+//   const data = await Match.findOne({
+//     where: {
+//       home: home,
+//     },
+//   });
+//   res.status(200).json({
+//     status: "success",
+//     data: data,
+//   });
+// });
